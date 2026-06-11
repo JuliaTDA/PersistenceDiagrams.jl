@@ -542,3 +542,146 @@ function (w::Wasserstein)(left, right; matching=false)
         return sum(results)
     end
 end
+
+"""
+    SlicedWasserstein(; slices=50)
+
+Use this object to compute the approximate Sliced Wasserstein distance between persistence
+diagrams. Unlike [`Bottleneck`](@ref) and [`Wasserstein`](@ref), the sliced Wasserstein
+distance is not based on a matching, but on averaging one-dimensional Wasserstein-1 distances
+between projections of the diagrams onto a family of lines.
+
+The (true) sliced Wasserstein distance is defined as
+
+```math
+SW(X, Y) = \\frac{1}{\\pi} \\int_{-\\pi/2}^{\\pi/2}
+    W_1\\bigl(\\mu_X^\\theta + \\Pi_\\Delta(\\mu_Y^\\theta),\\;
+             \\mu_Y^\\theta + \\Pi_\\Delta(\\mu_X^\\theta)\\bigr)\\, \\mathrm{d}\\theta,
+```
+
+where ``\\mu_X^\\theta`` is the projection of the points of diagram ``X`` onto the line of
+angle ``\\theta``, ``\\Pi_\\Delta`` is the orthogonal projection onto the diagonal, and
+``W_1`` is the one-dimensional Wasserstein-1 distance. Projecting each diagram's diagonal
+projections of the *other* diagram's points augments both diagrams to equal cardinality, so
+the one-dimensional optimal transport reduces to sorting.
+
+This implementation approximates the integral with a deterministic Riemann-style average over
+`slices` directions ``\\theta_i`` evenly spaced in ``[-\\pi/2, \\pi/2)``. The result is
+therefore reproducible: two calls with the same `slices` always return the same value.
+
+!!! note
+    The sliced Wasserstein distance is a distance only; it has no associated matching.
+    Calling [`matching`](@ref) on it throws an error.
+
+!!! note
+    Infinite intervals are not supported and are ignored, consistent with the vectorization
+    methods (see [`PersistenceCurve`](@ref)). This differs from [`Bottleneck`](@ref) and
+    [`Wasserstein`](@ref), which return `Inf` when the diagrams have a different number of
+    infinite intervals.
+
+# Usage
+
+* `SlicedWasserstein(; slices=50)(left, right)`: compute the sliced Wasserstein distance
+  between persistence diagrams `left` and `right`.
+
+# Example
+
+```jldoctest
+julia> left = PersistenceDiagram([(1.0, 2.0), (5.0, 8.0)]);
+
+julia> right = PersistenceDiagram([(1.0, 2.0), (3.0, 4.0), (5.0, 10.0)]);
+
+julia> round(SlicedWasserstein()(left, right); digits=4)
+0.6905
+
+```
+
+# Reference
+
+Carrière, M., Cuturi, M., & Oudot, S. (2017). Sliced Wasserstein kernel for persistence
+diagrams. In *Proceedings of the 34th International Conference on Machine Learning (ICML)*,
+PMLR 70:664-673. [arXiv:1706.03358](https://arxiv.org/abs/1706.03358).
+"""
+struct SlicedWasserstein <: MatchingDistance
+    slices::Int
+
+    function SlicedWasserstein(; slices=50)
+        if slices < 1
+            throw(ArgumentError("`slices` must be positive"))
+        end
+        return new(Int(slices))
+    end
+end
+
+# Project the (birth, death) point of `int` and the projection of `int` onto the diagonal
+# onto the line through the origin with angle θ. `(cosθ, sinθ)` is the unit direction.
+_project_point(int, cosθ, sinθ) = birth(int) * cosθ + death(int) * sinθ
+function _project_diagonal(int, cosθ, sinθ)
+    m = midlife(int)
+    return m * cosθ + m * sinθ
+end
+
+function (sw::SlicedWasserstein)(
+    left::PersistenceDiagram, right::PersistenceDiagram; matching=false
+)
+    if matching
+        throw(ArgumentError("the sliced Wasserstein distance has no matching"))
+    end
+
+    # Infinite intervals are unsupported; ignore them (see docstring).
+    l = filter(isfinite, left)
+    r = filter(isfinite, right)
+
+    n = length(l)
+    m = length(r)
+    if n == 0 && m == 0
+        return 0.0
+    end
+
+    # For each direction, both diagrams are augmented with the diagonal projections of the
+    # other diagram's points, so both sorted sequences have length `n + m`.
+    proj1 = Vector{Float64}(undef, n + m)
+    proj2 = Vector{Float64}(undef, n + m)
+
+    total = 0.0
+    for k in 0:(sw.slices - 1)
+        θ = -π / 2 + k * (π / sw.slices)
+        cosθ = cos(θ)
+        sinθ = sin(θ)
+
+        # `proj1` holds left's projected points (1:n) and right's diagonal projections
+        # (n+1:n+m); `proj2` holds right's projected points (1:m) and left's diagonal
+        # projections (m+1:m+n). This is the standard augmentation that makes both
+        # sequences have length n + m.
+        for i in 1:n
+            proj1[i] = _project_point(l[i], cosθ, sinθ)
+            proj2[m + i] = _project_diagonal(l[i], cosθ, sinθ)
+        end
+        for j in 1:m
+            proj2[j] = _project_point(r[j], cosθ, sinθ)
+            proj1[n + j] = _project_diagonal(r[j], cosθ, sinθ)
+        end
+
+        sort!(proj1)
+        sort!(proj2)
+
+        s = 0.0
+        for idx in eachindex(proj1)
+            s += abs(proj1[idx] - proj2[idx])
+        end
+        total += s
+    end
+
+    # Average over directions, with the 1/π normalisation of the continuous definition.
+    return total / sw.slices / π
+end
+
+function (sw::SlicedWasserstein)(left, right; matching=false)
+    if matching
+        throw(ArgumentError("the sliced Wasserstein distance has no matching"))
+    end
+    if length(left) ≠ length(right)
+        throw(ArgumentError("`left` and `right` must have the same length"))
+    end
+    return sum(sw(l, r) for (l, r) in zip(left, right))
+end

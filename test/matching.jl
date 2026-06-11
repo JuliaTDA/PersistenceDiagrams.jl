@@ -136,3 +136,95 @@ end
     @test_throws ArgumentError Bottleneck()(diags1[1:1], diags2)
     @test_throws ArgumentError Wasserstein()(diags1, diags2[2:2])
 end
+
+@testset "SlicedWasserstein" begin
+    diag1 = PersistenceDiagram([(1, 2), (5, 8)])
+    diag2 = PersistenceDiagram([(1, 2), (3, 4), (5, 10)])
+    empty = PersistenceDiagram(PersistenceInterval[])
+
+    @testset "constructor" begin
+        @test SlicedWasserstein() isa PersistenceDiagrams.MatchingDistance
+        @test SlicedWasserstein().slices == 50
+        @test SlicedWasserstein(; slices=10).slices == 10
+        @test_throws ArgumentError SlicedWasserstein(; slices=0)
+        @test_throws ArgumentError SlicedWasserstein(; slices=-1)
+    end
+
+    @testset "self distance is zero" begin
+        @test SlicedWasserstein()(diag1, diag1) == 0.0
+        @test SlicedWasserstein()(diag2, diag2) == 0.0
+        @test SlicedWasserstein(; slices=13)(diag2, diag2) == 0.0
+    end
+
+    @testset "symmetry" begin
+        @test SlicedWasserstein()(diag1, diag2) == SlicedWasserstein()(diag2, diag1)
+        @test SlicedWasserstein(; slices=7)(diag1, diag2) ==
+            SlicedWasserstein(; slices=7)(diag2, diag1)
+    end
+
+    @testset "non-negativity and positivity for distinct diagrams" begin
+        @test SlicedWasserstein()(diag1, diag2) > 0
+    end
+
+    @testset "hand-computable example" begin
+        # A single point (0, 2) versus an empty diagram. Its diagonal projection is the
+        # midlife point (1, 1). For a direction θ, the point projects to 2sinθ and the
+        # diagonal point to cosθ + sinθ, so the per-slice L1 distance is |sinθ - cosθ|.
+        # With `slices=2` the directions are θ = -π/2 and θ = 0, giving |−1−0| = 1 and
+        # |0−1| = 1. Averaging (sum/slices) and applying the 1/π factor gives 2/2/π = 1/π.
+        point = PersistenceDiagram([(0.0, 2.0)])
+        @test SlicedWasserstein(; slices=2)(point, empty) ≈ 1 / π
+
+        # Two equal single-point diagrams are at distance zero regardless of slices.
+        @test SlicedWasserstein(; slices=2)(point, point) == 0.0
+    end
+
+    @testset "qualitatively tracks Wasserstein-1" begin
+        # Moving one point further away should only increase the sliced distance.
+        near = PersistenceDiagram([(1, 2), (5, 8.1)])
+        far = PersistenceDiagram([(1, 2), (5, 20.0)])
+        @test SlicedWasserstein()(diag1, near) < SlicedWasserstein()(diag1, far)
+        # Closer to itself than to a different diagram.
+        @test SlicedWasserstein()(diag1, near) < SlicedWasserstein()(diag1, diag2) ||
+            SlicedWasserstein()(diag1, near) < SlicedWasserstein()(near, diag2)
+    end
+
+    @testset "empty diagrams" begin
+        @test SlicedWasserstein()(empty, empty) == 0.0
+        @test SlicedWasserstein()(empty, diag2) > 0
+        # Distance between empty and non-empty is symmetric.
+        @test SlicedWasserstein()(empty, diag2) == SlicedWasserstein()(diag2, empty)
+    end
+
+    @testset "infinite intervals are ignored" begin
+        inf1 = PersistenceDiagram([(1, 2), (5, 8), (1, Inf)])
+        @test SlicedWasserstein()(inf1, diag2) == SlicedWasserstein()(diag1, diag2)
+        only_inf = PersistenceDiagram([(1, Inf)])
+        @test SlicedWasserstein()(only_inf, empty) == 0.0
+    end
+
+    @testset "determinism and stability with more slices" begin
+        # Evenly spaced (non-random) angles make the result reproducible.
+        @test SlicedWasserstein(; slices=20)(diag1, diag2) ==
+            SlicedWasserstein(; slices=20)(diag1, diag2)
+        # The approximation stabilizes as the number of slices grows.
+        v50 = SlicedWasserstein(; slices=50)(diag1, diag2)
+        v100 = SlicedWasserstein(; slices=100)(diag1, diag2)
+        v200 = SlicedWasserstein(; slices=200)(diag1, diag2)
+        @test abs(v100 - v200) < abs(v50 - v200)
+        @test abs(v100 - v200) < 1e-2
+    end
+
+    @testset "no matching" begin
+        @test_throws ArgumentError SlicedWasserstein()(diag1, diag2; matching=true)
+        @test_throws ArgumentError matching(SlicedWasserstein(), diag1, diag2)
+    end
+
+    @testset "collections sum over pairs" begin
+        diags1 = [diag1, diag2]
+        diags2 = [diag2, diag1]
+        @test SlicedWasserstein()(diags1, diags2) ≈
+            SlicedWasserstein()(diag1, diag2) + SlicedWasserstein()(diag2, diag1)
+        @test_throws ArgumentError SlicedWasserstein()(diags1, diags2[1:1])
+    end
+end

@@ -9,6 +9,10 @@ Wasserstein
 ```
 
 ```@docs
+SlicedWasserstein
+```
+
+```@docs
 matching
 ```
 
