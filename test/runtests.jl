@@ -10,6 +10,9 @@ end
 @safetestset "matching" begin
     include("matching.jl")
 end
+@safetestset "kernels" begin
+    include("kernels.jl")
+end
 @safetestset "persistencecurves" begin
     include("persistencecurves.jl")
 end

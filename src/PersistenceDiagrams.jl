@@ -23,6 +23,9 @@ export PersistenceDiagram,
     SlicedWasserstein,
     weight,
     matching,
+    SlicedWassersteinKernel,
+    PersistenceFisherKernel,
+    kernel_matrix,
     PersistenceImage,
     PersistenceCurve,
     BettiCurve,
@@ -42,6 +45,7 @@ export PersistenceDiagram,
 
 using Compat
 using Hungarian
+using LinearAlgebra
 using RecipesBase
 using ScientificTypes
 using Statistics
@@ -51,6 +55,7 @@ include("intervals.jl")
 include("diagrams.jl")
 include("tables.jl")
 include("matching.jl")
+include("kernels.jl")
 
 include("persistencecurves.jl")
 include("persistenceimages.jl")

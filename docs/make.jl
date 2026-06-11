@@ -14,6 +14,7 @@ makedocs(;
         "Home" => "index.md",
         "Basics" => "basics.md",
         "Distances and Matchings" => "distances.md",
+        "Kernels" => "kernels.md",
         "Vectorization" => "vectorization.md",
         "MLJ Models" => "mlj.md",
     ],
