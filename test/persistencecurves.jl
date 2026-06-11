@@ -155,6 +155,47 @@ end
     end
 end
 
+@testset "persistence_entropy" begin
+    @testset "two equal intervals give log(2)" begin
+        diagram = PersistenceDiagram([(0.0, 1.0), (2.0, 3.0)])
+        @test persistence_entropy(diagram) ≈ log(2)
+        # Equal persistences regardless of birth times.
+        diagram2 = PersistenceDiagram([(5.0, 7.0), (10.0, 12.0)])
+        @test persistence_entropy(diagram2) ≈ log(2)
+    end
+
+    @testset "n equal intervals give log(n)" begin
+        for n in 1:5
+            diagram = PersistenceDiagram([(Float64(i), i + 1.0) for i in 1:n])
+            @test persistence_entropy(diagram) ≈ log(n)
+        end
+    end
+
+    @testset "single interval gives 0" begin
+        @test persistence_entropy(PersistenceDiagram([(0.0, 5.0)])) == 0.0
+        @test persistence_entropy(PersistenceDiagram([(3.0, 4.0)])) == 0.0
+    end
+
+    @testset "empty diagram gives 0" begin
+        @test persistence_entropy(PersistenceDiagram(PersistenceInterval[])) == 0.0
+    end
+
+    @testset "infinite intervals are skipped" begin
+        diagram = PersistenceDiagram([(0.0, 1.0), (2.0, 3.0), (0.0, Inf)])
+        @test persistence_entropy(diagram) ≈ log(2)
+        # A diagram with only infinite intervals has no finite persistence.
+        @test persistence_entropy(PersistenceDiagram([(0.0, Inf)])) == 0.0
+        @test persistence_entropy(PersistenceDiagram([(0.0, Inf), (1.0, Inf)])) == 0.0
+    end
+
+    @testset "is non-negative and maximised by the uniform distribution" begin
+        uniform = PersistenceDiagram([(0.0, 1.0), (0.0, 1.0), (0.0, 1.0)])
+        skewed = PersistenceDiagram([(0.0, 0.1), (0.0, 1.0), (0.0, 10.0)])
+        @test persistence_entropy(uniform) ≈ log(3)
+        @test 0 ≤ persistence_entropy(skewed) < persistence_entropy(uniform)
+    end
+end
+
 @testset "Normalization" begin
     diagram = PersistenceDiagram([
         (0.0, 1.0),

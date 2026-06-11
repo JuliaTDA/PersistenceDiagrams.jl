@@ -304,6 +304,74 @@ function life_entropy((b, d), diag, _)
 end
 
 """
+    persistence_entropy(diagram)
+
+Compute the (scalar) persistent entropy of a persistence diagram.
+
+Unlike [`LifeEntropy`](@ref), which produces a *curve* (a vector summarizing the entropy
+contribution at each time step), this returns a single number: the Shannon entropy of the
+distribution of (normalized) persistences. With persistences ``p_i = d_i - b_i`` over the
+finite intervals and ``L = \\sum_i p_i``, it is defined as
+
+```math
+E(D) = -\\sum_i \\frac{p_i}{L} \\log\\left(\\frac{p_i}{L}\\right).
+```
+
+The natural logarithm is used, so two equal intervals give ``\\log 2``. This is the scalar
+feature exposed by GUDHI and giotto-tda.
+
+# Edge cases
+
+* An empty diagram returns `0.0` by convention.
+* A single (finite) interval returns `0.0`.
+* Infinite intervals are skipped, consistent with the other vectorization methods (see
+  [`PersistenceCurve`](@ref)). A diagram containing only infinite intervals therefore returns
+  `0.0`.
+
+# Example
+
+```jldoctest
+julia> diagram = PersistenceDiagram([(0.0, 1.0), (2.0, 3.0)]);
+
+julia> persistence_entropy(diagram) ≈ log(2)
+true
+
+julia> persistence_entropy(PersistenceDiagram([(0.0, 5.0)]))
+0.0
+
+julia> persistence_entropy(PersistenceDiagram(PersistenceInterval[]))
+0.0
+```
+
+# See also
+
+* [`LifeEntropy`](@ref): the curve (vectorized) version of persistent entropy.
+
+# Reference
+
+Atienza, N., González-Díaz, R., & Soriano-Trigueros, M. (2018). On the stability of
+persistent entropy and new summary functions for TDA. [arXiv preprint
+arXiv:1803.08304](https://arxiv.org/abs/1803.08304).
+"""
+function persistence_entropy(diagram)
+    total = 0.0
+    for int in diagram
+        isfinite(int) || continue
+        total += persistence(int)
+    end
+    total == 0 && return 0.0
+
+    entropy = 0.0
+    for int in diagram
+        isfinite(int) || continue
+        x = persistence(int) / total
+        x == 0 && continue
+        entropy -= x * log(x)
+    end
+    return entropy
+end
+
+"""
     MidlifeEntropy
 
 The midlife entropy curve.

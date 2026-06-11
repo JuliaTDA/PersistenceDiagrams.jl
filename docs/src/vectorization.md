@@ -29,6 +29,10 @@ MidlifeEntropy
 ```
 
 ```@docs
+persistence_entropy
+```
+
+```@docs
 PDThresholding
 ```
 
