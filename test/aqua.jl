@@ -1,4 +1,4 @@
-using PersistenceDiagrams
+using TDAPersistenceDiagrams
 using Aqua
 
-Aqua.test_all(PersistenceDiagrams; ambiguities=false)
+Aqua.test_all(TDAPersistenceDiagrams; ambiguities=false)

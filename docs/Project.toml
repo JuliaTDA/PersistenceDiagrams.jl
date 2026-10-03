@@ -1,2 +1,3 @@
 [deps]
+TDAPersistenceDiagrams = "bbe17acd-c4ea-4f01-a2b8-42969f873a90"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"

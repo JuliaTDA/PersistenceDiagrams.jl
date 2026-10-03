@@ -1,4 +1,4 @@
-using PersistenceDiagrams
+using TDAPersistenceDiagrams
 
 using Compat
 using DataFrames

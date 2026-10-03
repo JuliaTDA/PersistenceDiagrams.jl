@@ -1,7 +1,7 @@
-using PersistenceDiagrams
+using TDAPersistenceDiagrams
 using Test
 
-using PersistenceDiagrams:
+using TDAPersistenceDiagrams:
     BottleneckGraph,
     _adjacency_matrix,
     _depth_layers,
@@ -128,7 +128,7 @@ end
     ]
 
     @test Bottleneck()(diags1, diags2) == 5.0
-    @test Bottleneck()(diags1, diags2; matching=true)[2] isa PersistenceDiagrams.Matching
+    @test Bottleneck()(diags1, diags2; matching=true)[2] isa TDAPersistenceDiagrams.Matching
     @test Wasserstein()(diags1, diags2) == 62.5
     @test weight(Wasserstein(3)(diags1, diags2; matching=true)[1]) ==
         Wasserstein(3)(diags1[1], diags2[1])
@@ -143,7 +143,7 @@ end
     empty = PersistenceDiagram(PersistenceInterval[])
 
     @testset "constructor" begin
-        @test SlicedWasserstein() isa PersistenceDiagrams.MatchingDistance
+        @test SlicedWasserstein() isa TDAPersistenceDiagrams.MatchingDistance
         @test SlicedWasserstein().slices == 50
         @test SlicedWasserstein(; slices=10).slices == 10
         @test_throws ArgumentError SlicedWasserstein(; slices=0)

@@ -1,5 +1,5 @@
 using Test
-using PersistenceDiagrams
+using TDAPersistenceDiagrams
 
 @testset "Construction" begin
     for (start, stop) in ((0, 2), (ℯ, π)), len in (2, 13, 1001)

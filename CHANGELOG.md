@@ -1,3 +1,11 @@
+# TDAPersistenceDiagrams v0.1.0 (unreleased)
+
+* Establishes an independent experimental JuliaTDA fork of PersistenceDiagrams.jl with its own package name and UUID.
+* Preserves the public function/type names; updates imports, MLJ metadata, tests and documentation to the new package identity.
+* Preserves the local Sliced Wasserstein, persistence entropy, Sliced Wasserstein kernel and Persistence Fisher kernel additions.
+
+## Inherited upstream release history
+
 # v0.9.10
 
 * Bugfix with Bottleneck and Wasserstein distances. Wasserstein now supports changing the internal norm.

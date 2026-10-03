@@ -81,8 +81,8 @@ julia> diag_2 = PersistenceDiagram([(1, 2), (1, 1.5)]);
 
 julia> image = PersistenceImage([diag_1, diag_2])
 5×5 PersistenceImage(
-  distribution = PersistenceDiagrams.Binormal(0.5499999999999999),
-  weight = PersistenceDiagrams.DefaultWeightingFunction(1.65),
+  distribution = TDAPersistenceDiagrams.Binormal(0.5499999999999999),
+  weight = TDAPersistenceDiagrams.DefaultWeightingFunction(1.65),
 )
 
 julia> image(diag_1)

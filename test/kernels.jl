@@ -1,8 +1,8 @@
-using PersistenceDiagrams
+using TDAPersistenceDiagrams
 using Test
 using LinearAlgebra
 
-using PersistenceDiagrams: AbstractPersistenceKernel
+using TDAPersistenceDiagrams: AbstractPersistenceKernel
 
 @testset "SlicedWassersteinKernel" begin
     diag1 = PersistenceDiagram([(1, 2), (5, 8)])

@@ -1,13 +1,13 @@
 # MLJ Models
 
 ```@docs
-PersistenceDiagrams.PersistenceImageVectorizer
+TDAPersistenceDiagrams.PersistenceImageVectorizer
 ```
 
 ```@docs
-PersistenceDiagrams.PersistenceCurveVectorizer
+TDAPersistenceDiagrams.PersistenceCurveVectorizer
 ```
 
 ```@docs
-PersistenceDiagrams.PersistenceLandscapeVectorizer
+TDAPersistenceDiagrams.PersistenceLandscapeVectorizer
 ```

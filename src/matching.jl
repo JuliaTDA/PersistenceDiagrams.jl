@@ -144,7 +144,7 @@ julia> left = PersistenceDiagram([(0.0, 1.0), (3.0, 4.5)]);
 
 julia> right = PersistenceDiagram([(0.0, 1.0), (4.0, 5.0), (4.0, 7.0)]);
 
-julia> PersistenceDiagrams._adjacency_matrix(left, right)
+julia> TDAPersistenceDiagrams._adjacency_matrix(left, right)
 5×5 Matrix{Float64}:
   0.0   3.5    0.5  Inf   Inf
   4.0   1.0   Inf    0.5  Inf

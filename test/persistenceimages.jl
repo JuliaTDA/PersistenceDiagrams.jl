@@ -1,4 +1,4 @@
-using PersistenceDiagrams
+using TDAPersistenceDiagrams
 using Test
 
 @testset "Constructors" begin
@@ -9,8 +9,8 @@ using Test
     @test last(pi_1.ys) == 2
     @test first(pi_1.xs) == 0
     @test last(pi_1.xs) == 3
-    @test pi_1.weight == PersistenceDiagrams.DefaultWeightingFunction(2.0)
-    @test pi_1.distribution == PersistenceDiagrams.Binormal(0.375)
+    @test pi_1.weight == TDAPersistenceDiagrams.DefaultWeightingFunction(2.0)
+    @test pi_1.distribution == TDAPersistenceDiagrams.Binormal(0.375)
 
     pi_2 = PersistenceImage((1, 3), (2, 4); sigma=2.0, slope_end=0.5)
     @test length(pi_2.ys) == 6
@@ -19,8 +19,8 @@ using Test
     @test last(pi_2.ys) == 3
     @test first(pi_2.xs) == 2
     @test last(pi_2.xs) == 4
-    @test pi_2.weight == PersistenceDiagrams.DefaultWeightingFunction(1.5)
-    @test pi_2.distribution == PersistenceDiagrams.Binormal(2.0)
+    @test pi_2.weight == TDAPersistenceDiagrams.DefaultWeightingFunction(1.5)
+    @test pi_2.distribution == TDAPersistenceDiagrams.Binormal(2.0)
 
     @test PersistenceImage((0, 8), (0, 7); distribution=*).distribution == (*)
     @test PersistenceImage((0, 8), (0, 7); weight=*).weight == (*)
@@ -37,17 +37,17 @@ using Test
     pi_3 = PersistenceImage([diagram_1, diagram_2]; margin=0, zero_start=false)
     @test pi_3.ys == range(1, 6; length=6)
     @test pi_3.xs == range(0, 4; length=6)
-    @test pi_3.weight == PersistenceDiagrams.DefaultWeightingFunction(6.0)
+    @test pi_3.weight == TDAPersistenceDiagrams.DefaultWeightingFunction(6.0)
 
     pi_4 = PersistenceImage([diagram_1, diagram_2]; margin=0)
     @test pi_4.ys == range(0, 6; length=6)
     @test pi_4.xs == range(0, 4; length=6)
-    @test pi_4.weight == PersistenceDiagrams.DefaultWeightingFunction(6.0)
+    @test pi_4.weight == TDAPersistenceDiagrams.DefaultWeightingFunction(6.0)
 
     pi_5 = PersistenceImage([diagram_1, diagram_2]; margin=0.5)
     @test pi_5.ys == range(0, 9; length=6)
     @test pi_5.xs == range(-2, 6; length=6)
-    @test pi_5.weight == PersistenceDiagrams.DefaultWeightingFunction(9.0)
+    @test pi_5.weight == TDAPersistenceDiagrams.DefaultWeightingFunction(9.0)
 
     @test_throws ArgumentError PersistenceImage([diagram_1, diagram_2]; margin=-1)
 
@@ -57,8 +57,8 @@ using Test
 
     @test sprint((io, x) -> show(io, MIME"text/plain"(), x), pi_1) ==
         "10×15 PersistenceImage(\n" *
-          "  distribution = PersistenceDiagrams.Binormal(0.375),\n" *
-          "  weight = PersistenceDiagrams.DefaultWeightingFunction(2.0),\n)"
+          "  distribution = TDAPersistenceDiagrams.Binormal(0.375),\n" *
+          "  weight = TDAPersistenceDiagrams.DefaultWeightingFunction(2.0),\n)"
 end
 
 @testset "Transform" begin

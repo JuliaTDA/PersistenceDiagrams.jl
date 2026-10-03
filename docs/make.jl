@@ -1,9 +1,9 @@
 @info "build started."
 using Documenter
-using PersistenceDiagrams
+using TDAPersistenceDiagrams
 
 makedocs(;
-    sitename="PersistenceDiagrams.jl",
+    sitename="TDAPersistenceDiagrams.jl",
     format=Documenter.HTML(
         # Use clean URLs, unless built as a "local" build;
         ;
@@ -21,4 +21,4 @@ makedocs(;
     doctest=false, # Doctests are run as part of testing -- no need to run them twice.
 )
 
-deploydocs(; repo="github.com/mtsch/PersistenceDiagrams.jl.git")
+deploydocs(; repo="github.com/JuliaTDA/PersistenceDiagrams.jl.git")

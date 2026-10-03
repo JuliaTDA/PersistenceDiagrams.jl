@@ -1,4 +1,4 @@
-using PersistenceDiagrams
+using TDAPersistenceDiagrams
 using ScientificTypes
 
 diagram = PersistenceDiagram([(1, Inf), (2, 3)]; dim=0)

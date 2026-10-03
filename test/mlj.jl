@@ -1,5 +1,5 @@
 using MLJBase
-using PersistenceDiagrams
+using TDAPersistenceDiagrams
 using Suppressor
 using Tables
 using Test

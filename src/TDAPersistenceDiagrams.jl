@@ -1,11 +1,11 @@
 """
-# PersistenceDiagrams.jl
+# TDAPersistenceDiagrams.jl
 
 Types and functions for working with persistence diagrams.
 
-See [the docs](https://mtsch.github.io/PersistenceDiagrams.jl/dev/) for documentation.
+Experimental JuliaTDA fork of PersistenceDiagrams.jl. See the documentation in `docs/src`.
 """
-module PersistenceDiagrams
+module TDAPersistenceDiagrams
 
 export PersistenceDiagram,
     PersistenceInterval,
