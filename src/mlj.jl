@@ -164,6 +164,13 @@ function vectorizer(model::PersistenceImageVectorizer, diagrams)
         weight = model.weight
         slope_end = nothing
     end
+    # An inner training fold can have no finite bars in a homology dimension.
+    # Keep a fixed, data-independent fallback grid and never inspect test bars.
+    if !any(isfinite,Iterators.flatten(diagrams))
+        return PersistenceImage((0.0,1.0),(0.0,1.0);
+            size=(model.height,model.width),distribution=distribution,sigma=sigma,
+            weight=weight,slope_end=slope_end)
+    end
     return PersistenceImage(
         diagrams;
         size=(model.height, model.width),

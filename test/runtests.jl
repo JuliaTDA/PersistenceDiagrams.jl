@@ -1,6 +1,13 @@
 using SafeTestsets
 using Test
 
+@safetestset "descriptors" begin
+    include("descriptors.jl")
+end
+@safetestset "tuning" begin
+    include("tuning.jl")
+end
+
 @safetestset "diagrams" begin
     include("diagrams.jl")
 end
@@ -12,6 +19,12 @@ end
 end
 @safetestset "kernels" begin
     include("kernels.jl")
+end
+@safetestset "GUDHI numerical reference" begin
+    include("../validation/compare_gudhi.jl")
+end
+@safetestset "Fréchet means" begin
+    include("means.jl")
 end
 @safetestset "persistencecurves" begin
     include("persistencecurves.jl")

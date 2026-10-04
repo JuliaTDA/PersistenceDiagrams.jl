@@ -171,9 +171,9 @@ end
         # midlife point (1, 1). For a direction θ, the point projects to 2sinθ and the
         # diagonal point to cosθ + sinθ, so the per-slice L1 distance is |sinθ - cosθ|.
         # With `slices=2` the directions are θ = -π/2 and θ = 0, giving |−1−0| = 1 and
-        # |0−1| = 1. Averaging (sum/slices) and applying the 1/π factor gives 2/2/π = 1/π.
+        # |0−1| = 1. The Riemann step π/slices cancels the integral's 1/π factor.
         point = PersistenceDiagram([(0.0, 2.0)])
-        @test SlicedWasserstein(; slices=2)(point, empty) ≈ 1 / π
+        @test SlicedWasserstein(; slices=2)(point, empty) ≈ 1.0
 
         # Two equal single-point diagrams are at distance zero regardless of slices.
         @test SlicedWasserstein(; slices=2)(point, point) == 0.0

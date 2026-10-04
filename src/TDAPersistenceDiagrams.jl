@@ -25,7 +25,13 @@ export PersistenceDiagram,
     matching,
     SlicedWassersteinKernel,
     PersistenceFisherKernel,
+    PersistenceScaleSpaceKernel,
+    PersistenceWeightedGaussianKernel,
     kernel_matrix,
+    FrechetMeanResult,
+    frechet_mean,
+    diagram_mean,
+    frechet_variance,
     PersistenceImage,
     PersistenceCurve,
     BettiCurve,
@@ -43,10 +49,15 @@ export PersistenceDiagram,
     PersistenceCurveVectorizer,
     PersistenceLandscapeVectorizer
 
+export EulerCharacteristicCurve, PersistenceBlock, TropicalCoordinates, TentTemplate,
+    ComplexPolynomial, TopologicalVector, Atol, PersistenceDescriptorVectorizer
+export recommended_ranges, tuning_ranges
+
 using Compat
 using Hungarian
 using LinearAlgebra
 using RecipesBase
+using Random
 using ScientificTypes
 using Statistics
 using Tables
@@ -56,13 +67,17 @@ include("diagrams.jl")
 include("tables.jl")
 include("matching.jl")
 include("kernels.jl")
+include("means.jl")
 
 include("persistencecurves.jl")
 include("persistenceimages.jl")
+include("descriptors.jl")
 
 include("plotsrecipes.jl")
 
 include("scitypes.jl")
 include("mlj.jl")
+include("descriptor_mlj.jl")
+include("tuning.jl")
 
 end

@@ -403,7 +403,7 @@ function (::Bottleneck)(left::PersistenceDiagram, right::PersistenceDiagram; mat
         end
     end
 
-    if length(left) == 0 & length(right) == 0
+    if isempty(left) && isempty(right)
         if matching
             return Matching(left, right, 0, Pair{Int,Int}[], true)
         else
@@ -503,7 +503,7 @@ end
 function (w::Wasserstein)(
     left::PersistenceDiagram, right::PersistenceDiagram; matching=false
 )
-    if length(left) == 0 & length(right) == 0
+    if isempty(left) && isempty(right)
         if matching
             return Matching(left, right, 0, Pair{Int,Int}[], false)
         else
@@ -592,7 +592,7 @@ julia> left = PersistenceDiagram([(1.0, 2.0), (5.0, 8.0)]);
 julia> right = PersistenceDiagram([(1.0, 2.0), (3.0, 4.0), (5.0, 10.0)]);
 
 julia> round(SlicedWasserstein()(left, right); digits=4)
-0.6905
+2.1694
 
 ```
 
@@ -672,8 +672,8 @@ function (sw::SlicedWasserstein)(
         total += s
     end
 
-    # Average over directions, with the 1/π normalisation of the continuous definition.
-    return total / sw.slices / π
+    # Riemann sum: (1/π) * (π/slices) * sum of projected L1 distances.
+    return total / sw.slices
 end
 
 function (sw::SlicedWasserstein)(left, right; matching=false)

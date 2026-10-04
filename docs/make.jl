@@ -15,8 +15,11 @@ makedocs(;
         "Basics" => "basics.md",
         "Distances and Matchings" => "distances.md",
         "Kernels" => "kernels.md",
+        "Diagram averaging" => "means.md",
         "Vectorization" => "vectorization.md",
+        "Additional descriptors" => "descriptors.md",
         "MLJ Models" => "mlj.md",
+        "Validation and benchmarks" => "validation.md",
     ],
     doctest=false, # Doctests are run as part of testing -- no need to run them twice.
 )

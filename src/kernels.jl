@@ -57,7 +57,7 @@ julia> SlicedWassersteinKernel()(left, left)
 1.0
 
 julia> round(SlicedWassersteinKernel()(left, right); digits=4)
-0.708
+0.338
 
 ```
 
@@ -302,3 +302,5 @@ function kernel_matrix(k::AbstractPersistenceKernel, diagrams; symmetric=true)
         return G
     end
 end
+
+include("additional_kernels.jl")

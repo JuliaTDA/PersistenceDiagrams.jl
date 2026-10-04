@@ -4,6 +4,44 @@ using LinearAlgebra
 
 using TDAPersistenceDiagrams: AbstractPersistenceKernel
 
+@testset "Scale-space and persistence-weighted Gaussian reference formulas" begin
+    x = PersistenceDiagram([(0.0, 2.0)])
+    y = PersistenceDiagram([(1.0, 4.0)])
+    empty = PersistenceDiagram(PersistenceInterval[])
+    k = PersistenceScaleSpaceKernel(; sigma=0.7)
+    expected = (exp(-5 / (8 * 0.7)) - exp(-17 / (8 * 0.7))) / (8π * 0.7)
+    @test k(x, y) ≈ expected
+    @test k(x, x) ≈ (1 - exp(-8 / (8 * 0.7))) / (8π * 0.7)
+    @test k(x, empty) == 0
+    @test k(PersistenceDiagram([(1.0, 1.0)]), y) == 0
+    @test k(PersistenceDiagram([(0.0, Inf)]), y) == 0
+
+    p = PersistenceWeightedGaussianKernel(; sigma=2, C=0.5, power=2)
+    @test p(x, y) ≈ atan(0.5 * 2^2) * atan(0.5 * 3^2) * exp(-5 / 8)
+    @test p(x, x) ≈ atan(2)^2
+    @test p(empty, x) == 0
+    @test p(PersistenceDiagram([(1.0, 1.0)]), x) == 0
+    outer = PersistenceWeightedGaussianKernel(; sigma=2, C=0.5, power=2, bandwidth=0.3)
+    @test outer(x, y) ≈ exp(-(p(x, x) + p(y, y) - 2p(x, y)) / (2 * 0.3^2))
+    @test outer(empty, empty) == 1
+    @test PersistenceWeightedGaussianKernel(; weight=persistence)(x, x) == 4
+    @test_throws ArgumentError PersistenceWeightedGaussianKernel(; weight=x -> 1)(PersistenceDiagram([(1, 1)]), x)
+
+    corpus = [empty, x, y, PersistenceDiagram([(0, 3), (4, 8)]),
+              PersistenceDiagram([(0.2, 3.1), (4.1, 7.8), (0, Inf)])]
+    for kernel in (k, p, outer)
+        gram = Matrix(kernel_matrix(kernel, corpus))
+        @test gram ≈ gram'
+        @test eigmin(gram) >= -1e-10
+        @test gram ≈ kernel_matrix(kernel, corpus; symmetric=false)
+    end
+    for bad in (0, -1, Inf, NaN)
+        @test_throws ArgumentError PersistenceScaleSpaceKernel(; sigma=bad)
+        @test_throws ArgumentError PersistenceWeightedGaussianKernel(; sigma=bad)
+        @test_throws ArgumentError PersistenceWeightedGaussianKernel(; bandwidth=bad)
+    end
+end
+
 @testset "SlicedWassersteinKernel" begin
     diag1 = PersistenceDiagram([(1, 2), (5, 8)])
     diag2 = PersistenceDiagram([(1, 2), (3, 4), (5, 10)])
