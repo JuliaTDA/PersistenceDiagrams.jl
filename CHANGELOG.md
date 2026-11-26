@@ -1,5 +1,7 @@
 # TDAPersistenceDiagrams v0.1.0 (unreleased)
 
+* Add optional threaded Gram matrix evaluation with identical per-entry arithmetic.
+
 * Correct the Sliced Wasserstein quadrature normalization (remove a second 1/π
   factor), changing distance and SW kernel values. Add pinned GUDHI numerical
   fixtures, benchmark scripts, baseline measurements and documented tolerances.

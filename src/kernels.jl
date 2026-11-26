@@ -243,7 +243,7 @@ function (k::PersistenceFisherKernel)(left, right)
 end
 
 """
-    kernel_matrix(k, diagrams; symmetric=true)
+    kernel_matrix(k, diagrams; symmetric=true, threaded=false)
 
 Compute the Gram (kernel) matrix of the kernel `k` over a collection of persistence
 `diagrams`. Entry `(i, j)` is `k(diagrams[i], diagrams[j])`.
@@ -253,7 +253,8 @@ When `symmetric=true` (the default), the kernel is assumed symmetric -- as both
 upper triangle is evaluated (halving the work) and the result is returned as a
 `LinearAlgebra.Symmetric` matrix, ready to be passed to kernel methods. With
 `symmetric=false`, every entry is computed independently and a plain `Matrix{Float64}` is
-returned.
+returned. With `threaded=true`, the kernel must support concurrent calls. Each
+entry uses the same arithmetic as a serial call.
 
 # Example
 
@@ -264,7 +265,7 @@ julia> diagrams = [
            PersistenceDiagram([(0.0, 5.0)]),
        ];
 
-julia> G = kernel_matrix(SlicedWassersteinKernel(), diagrams);
+julia> G = kernel_matrix(SlicedWassersteinKernel(), diagrams; threaded=true);
 
 julia> size(G)
 (3, 3)
@@ -282,25 +283,40 @@ true
 * [`SlicedWassersteinKernel`](@ref)
 * [`PersistenceFisherKernel`](@ref)
 """
-function kernel_matrix(k::AbstractPersistenceKernel, diagrams; symmetric=true)
-    n = length(diagrams)
+function kernel_matrix(k::AbstractPersistenceKernel, diagrams; symmetric=true, threaded::Bool=false)
     diagrams = collect(diagrams)
+    n = length(diagrams)
     G = Matrix{Float64}(undef, n, n)
-    if symmetric
-        for j in 1:n
-            for i in 1:j
-                v = k(diagrams[i], diagrams[j])
-                G[i, j] = v
-                G[j, i] = v
+    if threaded && Threads.nthreads() > 1 && n > 1
+        # Arrange short and long triangular columns next to each other so that
+        # contiguous batches have similar amounts of work.
+        Threads.@threads for job in 1:n
+            j = if !symmetric
+                job
+            elseif isodd(job)
+                (job + 1) ÷ 2
+            else
+                n - job ÷ 2 + 1
             end
+            _kernel_column!(G, k, diagrams, j, symmetric)
         end
-        return Symmetric(G)
     else
-        for j in 1:n, i in 1:n
-            G[i, j] = k(diagrams[i], diagrams[j])
+        for j in 1:n
+            _kernel_column!(G, k, diagrams, j, symmetric)
         end
-        return G
     end
+    return symmetric ? Symmetric(G) : G
+end
+
+function _kernel_column!(G, k, diagrams, j, symmetric)
+    last_row = symmetric ? j : length(diagrams)
+    @inbounds for i in 1:last_row
+        G[i, j] = k(diagrams[i], diagrams[j])
+        if symmetric && i != j
+            G[j, i] = G[i, j]
+        end
+    end
+    return nothing
 end
 
 include("additional_kernels.jl")

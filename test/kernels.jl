@@ -212,3 +212,16 @@ end
         @test Matrix(Gs) == Gn
     end
 end
+
+@testset "Threaded Gram matrices match serial" begin
+    d = PersistenceDiagram([(0.0, 1.0), (2.0, Inf)])
+    empty = PersistenceDiagram(PersistenceInterval[])
+    k = PersistenceScaleSpaceKernel()
+    for n in (0, 1, 7, 8, 49), symmetric in (true, false)
+        diagrams = [isodd(i) ? d : empty for i in 1:n]
+        serial = kernel_matrix(k, diagrams; symmetric)
+        threaded = kernel_matrix(k, diagrams; symmetric, threaded=true)
+        @test typeof(threaded) == typeof(serial)
+        @test threaded == serial
+    end
+end
